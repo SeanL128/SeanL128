@@ -3,7 +3,7 @@
 <img src="assets/header.svg" alt="Sean Lindsay — I build agent tooling for Claude Code" width="830"/>
 
 **Open to agent-infrastructure and developer-tools work** ·
-[email](mailto:seanlindsay2008@gmail.com) · [seanlindsay.xyz](https://seanlindsay.xyz) · [resume](https://seanlindsay.xyz)
+[email](mailto:seanlindsay2008@gmail.com) · [seanlindsay.xyz](https://seanlindsay.xyz)
 
 </div>
 
