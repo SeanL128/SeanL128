@@ -90,7 +90,7 @@ def info_card_svg():
         ("role", "AI agent tooling engineer"),
         ("open to", "agent infra / dev-tools work"),
         ("building", "alloyd, nightcrew, autodev"),
-        ("plugins", "deslop, shush, blueprint-forge"),
+        ("plugins", "deslop, shush"),
         ("stack", "Python, TypeScript, Swift"),
         ("web", "seanlindsay.xyz"),
         ("mail", "seanlindsay2008@gmail.com"),
@@ -119,40 +119,52 @@ def info_card_svg():
 
 
 def pipeline_svg():
-    """ASCII diagram of the autonomous build pipeline; a brightness pulse
-    cycles through the stages on loop. Box art is plain rows of monospace
-    text, so it stays selectable-looking and crisp."""
+    """Animated ASCII diagram of the autonomous build pipeline: a dot travels
+    the chain, each stage flashes bright as it activates, and a log column
+    prints the run in sync. Elements are visible by default, so paused
+    renderers show the complete diagram."""
     w, h = 410, 266
-    cycle = 6.0
     stages = [
-        # (box lines, annotation, pulse start)
-        (["   spec.md"], "", 0.0),
-        (["┌──────────┐", "│   plan   │", "└──────────┘"], "◀ blueprint-forge", 1.1),
-        (["┌──────────┐", "│  build   │", "└──────────┘"], "◀ alloyd picks the model", 2.3),
-        (["┌──────────┐", "│  verify  │", "└──────────┘"], "◀ no PR ships unverified", 3.5),
-        (["   PR ✓"], "", 4.7),
+        # (box lines, log line, activate time)
+        (["  spec.md"], "reading spec.md", 0.3),
+        (["\u250c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2510", "\u2502  plan  \u2502", "\u2514\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2518"], "plan: 5 tasks, 2 waves", 1.4),
+        (["\u250c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2510", "\u2502 build  \u2502", "\u2514\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2518"], "alloyd \u2192 routes each task", 2.6),
+        (["\u250c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2510", "\u2502 verify \u2502", "\u2514\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2518"], "tests 42/42 \u00b7 review clean", 3.8),
+        (["  PR \u2713"], "nightcrew: PR opened", 5.0),
     ]
-    lh, size, x0 = 14, 11.5, 40
+    cyc, lh, size, x0, xlog = 6.5, 14, 11.5, 36, 168
     body, y = [], 58
-    for i, (box, note, t0) in enumerate(stages):
-        rows = []
+    for i, (box, log, t0) in enumerate(stages):
+        rows, oy = [], y
         for ln in box:
             rows.append(f'<text x="{x0}" y="{y}" font-size="{size}" xml:space="preserve">{esc(ln)}</text>')
             y += lh
-        if note:
-            ny = y - lh * (len(box) - 1) // 2 - lh // 2  # beside box middle
-            rows.append(f'<text x="{x0 + 110}" y="{ny}" font-size="10.5" fill="{MUTED}">{esc(note)}</text>')
+        # base (always visible) + bright overlay that flashes when active
+        body.append(f'<g fill="{INK}" opacity="0.8">{"".join(rows)}</g>')
+        body.append(f'<g fill="{BRIGHT}" opacity="0" style="animation: flash {cyc}s linear {t0}s infinite">{"".join(rows)}</g>')
+        # synced log line, aligned with box middle
+        ly = oy + lh * (len(box) // 2)
         body.append(
-            f'<g fill="{INK}" style="animation: pl {cycle}s linear {t0}s infinite">{"".join(rows)}</g>'
+            f'<g style="animation: hold {cyc}s linear {t0}s infinite">'
+            f'<text x="{xlog}" y="{ly}" font-size="10.5" fill="{ACCENT}">\u25b8</text>'
+            f'<text x="{xlog + 14}" y="{ly}" font-size="10.5" fill="{MUTED}">{esc(log)}</text></g>'
         )
         if i < len(stages) - 1:
             body.append(
-                f'<text x="{x0}" y="{y}" font-size="{size}" fill="{MUTED}" xml:space="preserve"'
-                f' style="animation: pl {cycle}s linear {t0 + 0.6:.1f}s infinite">      ▼</text>'
+                f'<text x="{x0}" y="{y}" font-size="{size}" fill="{MUTED}" opacity="0.6" xml:space="preserve">    \u2502</text>'
             )
             y += lh
+    # traveling dot down the connector column
+    top, bot = 52, y - lh - 4
+    body.append(
+        f'<circle cx="{x0 + 33}" cy="0" r="2.6" fill="{BRIGHT}" opacity="0" '
+        f'style="animation: travel {cyc}s linear infinite"/>'
+    )
     style = f"""<style>
-@keyframes pl {{ 0%, 100% {{ opacity: 0.72 }} 6%, 16% {{ opacity: 1 }} 24% {{ opacity: 0.72 }} }}
+@keyframes flash {{ 0%,100% {{ opacity: 0 }} 4% {{ opacity: 1 }} 16% {{ opacity: 1 }} 26% {{ opacity: 0 }} }}
+@keyframes hold {{ 0% {{ opacity: 0 }} 4% {{ opacity: 1 }} 90% {{ opacity: 1 }} 97%,100% {{ opacity: 0 }} }}
+@keyframes travel {{ 0% {{ transform: translateY({top}px); opacity: 0 }} 5% {{ opacity: 1 }}
+  77% {{ transform: translateY({bot}px); opacity: 1 }} 82%,100% {{ transform: translateY({bot}px); opacity: 0 }} }}
 text {{ font-family: {FONT} }}
 @media (prefers-reduced-motion: reduce) {{ * {{ animation: none !important }} }}
 </style>"""
