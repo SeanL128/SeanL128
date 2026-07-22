@@ -16,12 +16,12 @@ from PIL import Image, ImageOps
 
 OUT = pathlib.Path(__file__).resolve().parent.parent / "assets" / "portrait.svg"
 
-COLS, ROWS = 100, 53          # character grid
+COLS, ROWS = 96, 58          # character grid
 RAMP = " .`:-=+*cs#%@"        # bright (sparse) -> dark (dense)
 BG = "#0d0d0c"
 BORDER = "#2a2926"
 FILL = "#c9cdc4"              # single light gray -- monochrome on purpose
-CW, CH = 7.2, 12              # cell size in px
+CW, CH = 6.0, 10              # cell size in px
 
 
 def prep(path):
@@ -35,7 +35,7 @@ def prep(path):
     bg = Image.new("RGBA", img.size, (255, 255, 255, 255))
     img = Image.alpha_composite(bg, img.convert("RGBA")).convert("L")
     # lift facial midtones: blend histogram-equalized version into original
-    img = Image.blend(img, ImageOps.equalize(img), 0.35)
+    img = Image.blend(img, ImageOps.equalize(img), 0.5)
     img = ImageOps.autocontrast(img, cutoff=2)
     return img
 
@@ -57,7 +57,7 @@ def to_svg(img):
     return f"""<svg xmlns="http://www.w3.org/2000/svg" width="{w}" height="{h}" viewBox="0 0 {w} {h}" font-family="ui-monospace, Menlo, Consolas, monospace" role="img" aria-label="ASCII portrait of Sean">
 <style>
 @keyframes appear {{ from {{ opacity: 0 }} to {{ opacity: 1 }} }}
-.ln {{ animation: appear 0.25s backwards; font-size: 12px; fill: {FILL} }}
+.ln {{ animation: appear 0.25s backwards; font-size: 10px; fill: {FILL} }}
 @media (prefers-reduced-motion: reduce) {{ * {{ animation: none !important }} }}
 </style>
 <rect width="{w}" height="{h}" rx="12" fill="{BG}" stroke="{BORDER}"/>
