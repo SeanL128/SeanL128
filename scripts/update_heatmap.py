@@ -11,12 +11,12 @@ import urllib.request
 USER = "SeanL128"
 OUT = pathlib.Path(__file__).resolve().parent.parent / "assets" / "heatmap.svg"
 
-BG = "#100c08"
-BORDER = "#3a2c14"
-MUTED = "#8a7a5f"
-INK = "#e8dcc8"
+BG = "#0d0d0c"
+BORDER = "#2a2926"
+MUTED = "#7a7873"
+INK = "#e8e6e1"
 FONT = "ui-monospace, 'SF Mono', Menlo, Consolas, monospace"
-RAMP = ["#221a10", "#4a3210", "#8a5a24", "#c98a3d", "#ffb454"]  # level 0-4
+RAMP = ["#1d1d1b", "#383934", "#5c5f58", "#8a8f86", "#e8e6e1"]  # level 0-4
 
 CELL, GAP, PAD = 11, 3, 24
 
