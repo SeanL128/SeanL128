@@ -118,8 +118,54 @@ def info_card_svg():
     )
 
 
+def pipeline_svg():
+    """ASCII diagram of the autonomous build pipeline; a brightness pulse
+    cycles through the stages on loop. Box art is plain rows of monospace
+    text, so it stays selectable-looking and crisp."""
+    w, h = 410, 266
+    cycle = 6.0
+    stages = [
+        # (box lines, annotation, pulse start)
+        (["   spec.md"], "", 0.0),
+        (["┌──────────┐", "│   plan   │", "└──────────┘"], "◀ blueprint-forge", 1.1),
+        (["┌──────────┐", "│  build   │", "└──────────┘"], "◀ alloyd picks the model", 2.3),
+        (["┌──────────┐", "│  verify  │", "└──────────┘"], "◀ no PR ships unverified", 3.5),
+        (["   PR ✓"], "", 4.7),
+    ]
+    lh, size, x0 = 14, 11.5, 40
+    body, y = [], 58
+    for i, (box, note, t0) in enumerate(stages):
+        rows = []
+        for ln in box:
+            rows.append(f'<text x="{x0}" y="{y}" font-size="{size}" xml:space="preserve">{esc(ln)}</text>')
+            y += lh
+        if note:
+            ny = y - lh * (len(box) - 1) // 2 - lh // 2  # beside box middle
+            rows.append(f'<text x="{x0 + 110}" y="{ny}" font-size="10.5" fill="{MUTED}">{esc(note)}</text>')
+        body.append(
+            f'<g fill="{INK}" style="animation: pl {cycle}s linear {t0}s infinite">{"".join(rows)}</g>'
+        )
+        if i < len(stages) - 1:
+            body.append(
+                f'<text x="{x0}" y="{y}" font-size="{size}" fill="{MUTED}" xml:space="preserve"'
+                f' style="animation: pl {cycle}s linear {t0 + 0.6:.1f}s infinite">      ▼</text>'
+            )
+            y += lh
+    style = f"""<style>
+@keyframes pl {{ 0%, 100% {{ opacity: 0.72 }} 6%, 16% {{ opacity: 1 }} 24% {{ opacity: 0.72 }} }}
+text {{ font-family: {FONT} }}
+@media (prefers-reduced-motion: reduce) {{ * {{ animation: none !important }} }}
+</style>"""
+    return (
+        f'<svg xmlns="http://www.w3.org/2000/svg" width="{w}" height="{h}" viewBox="0 0 {w} {h}" '
+        f'font-family="{FONT}" role="img" aria-label="Pipeline: spec, plan, build, verify, PR">'
+        f'{style}{chrome(w, h, "$ nightcrew run")}' + "".join(body) + "</svg>"
+    )
+
+
 if __name__ == "__main__":
     OUT.mkdir(exist_ok=True)
     (OUT / "header.svg").write_text(header_svg())
     (OUT / "info-card.svg").write_text(info_card_svg())
-    print("wrote header.svg, info-card.svg")
+    (OUT / "pipeline.svg").write_text(pipeline_svg())
+    print("wrote header.svg, info-card.svg, pipeline.svg")

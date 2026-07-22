@@ -9,7 +9,7 @@
 
 <table align="center">
 <tr>
-<td valign="top"><img src="assets/portrait.svg" alt="ASCII portrait" width="400"/></td>
+<td valign="top"><img src="assets/pipeline.svg" alt="Pipeline: spec, plan, build, verify, PR" width="400"/></td>
 <td valign="top"><img src="assets/info-card.svg" alt="Profile info" width="410"/></td>
 </tr>
 </table>
