@@ -12,16 +12,16 @@ import pathlib
 import sys
 
 import numpy as np
-from PIL import Image, ImageOps
+from PIL import Image, ImageFilter, ImageOps
 
 OUT = pathlib.Path(__file__).resolve().parent.parent / "assets" / "portrait.svg"
 
-COLS, ROWS = 96, 58          # character grid
-RAMP = " .`:-=+*cs#%@"        # bright (sparse) -> dark (dense)
+COLS, ROWS = 112, 66          # character grid
+RAMP = "    .`:-=+*cs#%@"        # bright (sparse) -> dark (dense)
 BG = "#0d0d0c"
 BORDER = "#2a2926"
 FILL = "#c9cdc4"              # single light gray -- monochrome on purpose
-CW, CH = 6.0, 10              # cell size in px
+CW, CH = 5.4, 9              # cell size in px
 
 
 def prep(path):
@@ -34,9 +34,17 @@ def prep(path):
     # composite onto white so background maps to spaces
     bg = Image.new("RGBA", img.size, (255, 255, 255, 255))
     img = Image.alpha_composite(bg, img.convert("RGBA")).convert("L")
-    # lift facial midtones: blend histogram-equalized version into original
-    img = Image.blend(img, ImageOps.equalize(img), 0.5)
+    # CLAHE local contrast separates face planes from neck; fall back to unsharp
+    try:
+        import cv2
+        import numpy as _np
+        arr = cv2.createCLAHE(clipLimit=2.5, tileGridSize=(8, 8)).apply(_np.asarray(img))
+        img = Image.fromarray(cv2.medianBlur(arr, 3))
+    except ImportError:
+        img = img.filter(ImageFilter.UnsharpMask(radius=25, percent=60))
     img = ImageOps.autocontrast(img, cutoff=2)
+    # S-curve: blow highlights out to blank space, deepen feature shadows
+    img = img.point(lambda v: int(255 * min(1, max(0, ((v / 255 - 0.5) * 1.8 + 0.5 + 0.18)))))
     return img
 
 
@@ -57,7 +65,7 @@ def to_svg(img):
     return f"""<svg xmlns="http://www.w3.org/2000/svg" width="{w}" height="{h}" viewBox="0 0 {w} {h}" font-family="ui-monospace, Menlo, Consolas, monospace" role="img" aria-label="ASCII portrait of Sean">
 <style>
 @keyframes appear {{ from {{ opacity: 0 }} to {{ opacity: 1 }} }}
-.ln {{ animation: appear 0.25s backwards; font-size: 10px; fill: {FILL} }}
+.ln {{ animation: appear 0.25s backwards; font-size: 9px; fill: {FILL} }}
 @media (prefers-reduced-motion: reduce) {{ * {{ animation: none !important }} }}
 </style>
 <rect width="{w}" height="{h}" rx="12" fill="{BG}" stroke="{BORDER}"/>
