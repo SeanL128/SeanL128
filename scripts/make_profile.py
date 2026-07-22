@@ -26,7 +26,7 @@ RAMP = ["#1d1d1b", "#383934", "#5c5f58", "#8a8f86", "#e8e6e1"]
 
 W = 830
 X0 = 30
-CPS = 30  # typing chars/sec
+CPS = 55  # typing chars/sec
 
 
 def esc(s):
@@ -77,7 +77,7 @@ def robots_scene(y0, start):
     )
     stamp = (f'<text x="9" y="14" font-size="9" fill="{ACCENT}" text-anchor="middle" opacity="0" '
              f'style="animation: stampin {CYC}s linear infinite">✓</text>')
-    paper = (f'<g style="animation: carry {CYC}s ease-in-out infinite">'
+    paper = (f'<g opacity="0" style="animation: carry {CYC}s ease-in-out {start + 0.5:.2f}s infinite">'
              f'<rect x="0" y="0" width="18" height="20" rx="2" fill="{BG}" stroke="{INK}" stroke-width="1.3"/>'
              f'{paper_lines}{stamp}</g>')
     prslot = (f'<g style="animation: prglow {CYC}s linear infinite">'
@@ -141,40 +141,40 @@ def build():
     # ── $ whoami ──────────────────────────────────────────────
     ln, t = typed_line(64, "$ ", "whoami", t)
     body.append(ln)
-    ln, t = typed_line(98, "", "Sean Lindsay", t + 0.3, fill=BRIGHT, size=27)
+    ln, t = typed_line(98, "", "Sean Lindsay", t + 0.15, fill=BRIGHT, size=27)
     body.append(ln)
-    ln, t = typed_line(128, "> ", "I build agent tooling for Claude Code.", t + 0.25)
+    ln, t = typed_line(128, "> ", "I build agent tooling for Claude Code.", t + 0.12)
     body.append(ln)
 
     # ── $ status ──────────────────────────────────────────────
-    ln, t = typed_line(172, "$ ", "status", t + 0.5)
+    ln, t = typed_line(172, "$ ", "status", t + 0.25)
     body.append(ln)
     body.append(fade_group(
         f'<text x="{X0}" y="196" font-size="13" fill="{INK}">open to <tspan fill="{BRIGHT}">agent-infrastructure / developer-tools</tspan> work</text>'
-        f'<text x="{X0}" y="216" font-size="13" fill="{MUTED}">mail seanlindsay2008@gmail.com · web seanlindsay.xyz</text>', t + 0.2))
-    t += 0.6
+        f'<text x="{X0}" y="216" font-size="13" fill="{MUTED}">mail seanlindsay2008@gmail.com · web seanlindsay.xyz</text>', t + 0.1))
+    t += 0.3
 
     # ── $ nightcrew run (robots) ──────────────────────────────
-    ln, t = typed_line(258, "$ ", "nightcrew run", t + 0.4)
+    ln, t = typed_line(258, "$ ", "nightcrew run", t + 0.2)
     body.append(ln)
     scene, kf = robots_scene(270, t + 0.2)
     body.append(scene)
     kf_extra += kf
     body.append(fade_group(
-        f'<text x="{X0}" y="446" font-size="12" fill="{MUTED}">spec → plan → build → verify → PR · alloyd routes each task · no PR ships unverified</text>', t + 0.6))
-    t += 1.0
+        f'<text x="{X0}" y="446" font-size="12" fill="{MUTED}">spec → plan → build → verify → PR · alloyd routes each task · no PR ships unverified</text>', t + 0.15))
+    t += 0.5
 
     # ── $ git log --graph (heatmap) ───────────────────────────
-    ln, t = typed_line(492, "$ ", "git log --graph", t + 0.3)
+    ln, t = typed_line(492, "$ ", "git log --graph", t + 0.15)
     updated = datetime.date.today().isoformat()
     body.append(ln)
     body.append(fade_group(
         f'<text x="{X0 + 150}" y="492" font-size="12" fill="{MUTED}">(refreshes daily · {updated})</text>', t))
-    body.append(heatmap(510, t + 0.2))
-    t += 1.4
+    body.append(heatmap(510, t + 0.1))
+    t += 0.7
 
     # ── $ ls ~/projects ───────────────────────────────────────
-    ln, t = typed_line(668, "$ ", "ls ~/projects", t + 0.3)
+    ln, t = typed_line(668, "$ ", "ls ~/projects", t + 0.15)
     body.append(ln)
     projects = [
         ("alloyd/", "local router load-balancing one workload across Claude + ChatGPT subscriptions"),
@@ -186,14 +186,14 @@ def build():
         y = 694 + i * 22
         body.append(fade_group(
             f'<text x="{X0}" y="{y}" font-size="13" fill="{BRIGHT}" font-weight="bold">{esc(name)}</text>'
-            f'<text x="{X0 + 110}" y="{y}" font-size="12.5" fill="{INK}">{esc(desc)}</text>', t + 0.15 * i))
-    t += 0.8
+            f'<text x="{X0 + 110}" y="{y}" font-size="12.5" fill="{INK}">{esc(desc)}</text>', t + 0.08 * i))
+    t += 0.4
 
     # blinking cursor on final prompt line
-    ln, t2 = typed_line(806, "$ ", "", t + 0.4)
+    ln, t2 = typed_line(806, "$ ", "", t + 0.2)
     body.append(ln)
     body.append(f'<rect x="{X0 + 17}" y="794" width="8" height="15" fill="{ACCENT}" '
-                f'style="animation: blink 1.1s {t + 0.5:.2f}s infinite backwards"/>')
+                f'style="animation: blink 1.1s {t + 0.3:.2f}s infinite backwards"/>')
 
     H = 830
     chrome = (
