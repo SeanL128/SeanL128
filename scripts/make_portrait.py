@@ -34,6 +34,8 @@ def prep(path):
     # composite onto white so background maps to spaces
     bg = Image.new("RGBA", img.size, (255, 255, 255, 255))
     img = Image.alpha_composite(bg, img.convert("RGBA")).convert("L")
+    # lift facial midtones: blend histogram-equalized version into original
+    img = Image.blend(img, ImageOps.equalize(img), 0.35)
     img = ImageOps.autocontrast(img, cutoff=2)
     return img
 
