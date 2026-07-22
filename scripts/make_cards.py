@@ -119,59 +119,80 @@ def info_card_svg():
 
 
 def pipeline_svg():
-    """Animated ASCII diagram of the autonomous build pipeline: a dot travels
-    the chain, each stage flashes bright as it activates, and a log column
-    prints the run in sync. Elements are visible by default, so paused
-    renderers show the complete diagram."""
+    """Three little robots pass a spec sheet down the line: plan writes on it,
+    build adds to it, verify stamps it, and it exits as a merged PR. Loops.
+    All motion is CSS keyframes; a paused renderer shows the full scene."""
     w, h = 410, 266
-    stages = [
-        # (box lines, log line, activate time)
-        (["  spec.md"], "reading spec.md", 0.3),
-        (["\u250c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2510", "\u2502  plan  \u2502", "\u2514\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2518"], "plan: 5 tasks, 2 waves", 1.4),
-        (["\u250c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2510", "\u2502 build  \u2502", "\u2514\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2518"], "alloyd \u2192 routes each task", 2.6),
-        (["\u250c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2510", "\u2502 verify \u2502", "\u2514\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2518"], "tests 42/42 \u00b7 review clean", 3.8),
-        (["  PR \u2713"], "nightcrew: PR opened", 5.0),
-    ]
-    cyc, lh, size, x0, xlog = 6.5, 14, 11.5, 36, 168
-    body, y = [], 58
-    for i, (box, log, t0) in enumerate(stages):
-        rows, oy = [], y
-        for ln in box:
-            rows.append(f'<text x="{x0}" y="{y}" font-size="{size}" xml:space="preserve">{esc(ln)}</text>')
-            y += lh
-        # base (always visible) + bright overlay that flashes when active
-        body.append(f'<g fill="{INK}" opacity="0.8">{"".join(rows)}</g>')
-        body.append(f'<g fill="{BRIGHT}" opacity="0" style="animation: flash {cyc}s linear {t0}s infinite">{"".join(rows)}</g>')
-        # synced log line, aligned with box middle
-        ly = oy + lh * (len(box) // 2)
-        body.append(
-            f'<g style="animation: hold {cyc}s linear {t0}s infinite">'
-            f'<text x="{xlog}" y="{ly}" font-size="10.5" fill="{ACCENT}">\u25b8</text>'
-            f'<text x="{xlog + 14}" y="{ly}" font-size="10.5" fill="{MUTED}">{esc(log)}</text></g>'
-        )
-        if i < len(stages) - 1:
-            body.append(
-                f'<text x="{x0}" y="{y}" font-size="{size}" fill="{MUTED}" opacity="0.6" xml:space="preserve">    \u2502</text>'
-            )
-            y += lh
-    # traveling dot down the connector column
-    top, bot = 52, y - lh - 4
-    body.append(
-        f'<circle cx="{x0 + 33}" cy="0" r="2.6" fill="{BRIGHT}" opacity="0" '
-        f'style="animation: travel {cyc}s linear infinite"/>'
+    CYC = 9  # seconds per loop
+
+    def robot(x, y, label, delay):
+        # simple geometric bot: antenna, head with eyes, body, two arms
+        return f"""<g transform="translate({x},{y})"><g style="animation: bob 2.6s ease-in-out {delay}s infinite alternate">
+<line x1="18" y1="-34" x2="18" y2="-42" stroke="{MUTED}" stroke-width="2"/>
+<circle cx="18" cy="-44" r="3" fill="{ACCENT}"/>
+<rect x="2" y="-34" width="32" height="24" rx="5" fill="{PANEL}" stroke="{ACCENT}" stroke-width="1.5"/>
+<circle cx="12" cy="-22" r="2.6" fill="{INK}" style="animation: blinkeye 4.7s linear {delay + 1:.1f}s infinite"/>
+<circle cx="24" cy="-22" r="2.6" fill="{INK}" style="animation: blinkeye 4.7s linear {delay + 1:.1f}s infinite"/>
+<rect x="6" y="-8" width="24" height="20" rx="4" fill="{PANEL}" stroke="{MUTED}" stroke-width="1.5"/>
+<line x1="6" y1="2" x2="-4" y2="8" stroke="{MUTED}" stroke-width="2" stroke-linecap="round"/>
+<line x1="30" y1="2" x2="40" y2="8" stroke="{MUTED}" stroke-width="2" stroke-linecap="round"/>
+</g><text x="18" y="28" font-size="10.5" fill="{MUTED}" text-anchor="middle">{label}</text>
+</g>"""
+
+    bots = robot(64, 150, "plan", 0) + robot(178, 150, "build", 0.9) + robot(292, 150, "verify", 1.7)
+
+    # desk line the paper slides along
+    desk = f'<line x1="24" y1="164" x2="386" y2="164" stroke="{BORDER}" stroke-width="2"/>'
+
+    # the paper: a small sheet that gains lines at each station, then exits up-right
+    paper_lines = "".join(
+        f'<line x1="3" y1="{4 + i * 3.5}" x2="15" y2="{4 + i * 3.5}" stroke="{MUTED}" stroke-width="1.2" '
+        f'opacity="0" style="animation: ink{i} {CYC}s linear infinite"/>'
+        for i in range(4)
     )
+    stamp = (f'<text x="9" y="14" font-size="9" fill="{ACCENT}" text-anchor="middle" opacity="0" '
+             f'style="animation: stampin {CYC}s linear infinite">\u2713</text>')
+    paper = (f'<g style="animation: carry {CYC}s ease-in-out infinite">'
+             f'<rect x="0" y="0" width="18" height="20" rx="2" fill="{BG}" stroke="{INK}" stroke-width="1.3"/>'
+             f'{paper_lines}{stamp}</g>')
+
+    # PR slot, top right; lights up when the paper lands
+    prslot = (f'<g style="animation: prglow {CYC}s linear infinite">'
+              f'<text x="352" y="70" font-size="12" fill="{INK}" xml:space="preserve">PR \u2713</text>'
+              f'<text x="342" y="86" font-size="9.5" fill="{MUTED}">merged</text></g>')
+
+    caption = (f'<text x="24" y="240" font-size="10.5" fill="{MUTED}">'
+               f'spec \u2192 plan \u2192 build \u2192 verify \u2192 PR \u00b7 no PR ships unverified</text>')
+
     style = f"""<style>
-@keyframes flash {{ 0%,100% {{ opacity: 0 }} 4% {{ opacity: 1 }} 16% {{ opacity: 1 }} 26% {{ opacity: 0 }} }}
-@keyframes hold {{ 0% {{ opacity: 0 }} 4% {{ opacity: 1 }} 90% {{ opacity: 1 }} 97%,100% {{ opacity: 0 }} }}
-@keyframes travel {{ 0% {{ transform: translateY({top}px); opacity: 0 }} 5% {{ opacity: 1 }}
-  77% {{ transform: translateY({bot}px); opacity: 1 }} 82%,100% {{ transform: translateY({bot}px); opacity: 0 }} }}
+@keyframes bob {{ from {{ transform: translateY(0) }} to {{ transform: translateY(-3px) }} }}
+@keyframes blinkeye {{ 0%, 91%, 100% {{ opacity: 1 }} 93%, 96% {{ opacity: 0.15 }} }}
+@keyframes carry {{
+  0%   {{ transform: translate(24px, 142px); opacity: 0 }}
+  4%   {{ transform: translate(24px, 142px); opacity: 1 }}
+  16%  {{ transform: translate(55px, 142px) }}
+  30%  {{ transform: translate(55px, 142px) }}
+  42%  {{ transform: translate(169px, 142px) }}
+  56%  {{ transform: translate(169px, 142px) }}
+  68%  {{ transform: translate(283px, 142px) }}
+  82%  {{ transform: translate(283px, 142px) }}
+  94%  {{ transform: translate(348px, 58px); opacity: 1 }}
+  96%, 100% {{ transform: translate(348px, 58px); opacity: 0 }}
+}}
+@keyframes ink0 {{ 0%, 18% {{ opacity: 0 }} 24%, 100% {{ opacity: 1 }} }}
+@keyframes ink1 {{ 0%, 24% {{ opacity: 0 }} 30%, 100% {{ opacity: 1 }} }}
+@keyframes ink2 {{ 0%, 44% {{ opacity: 0 }} 50%, 100% {{ opacity: 1 }} }}
+@keyframes ink3 {{ 0%, 50% {{ opacity: 0 }} 56%, 100% {{ opacity: 1 }} }}
+@keyframes stampin {{ 0%, 70% {{ opacity: 0 }} 76%, 100% {{ opacity: 1 }} }}
+@keyframes prglow {{ 0%, 88% {{ opacity: 0.45 }} 94%, 100% {{ opacity: 1 }} }}
 text {{ font-family: {FONT} }}
 @media (prefers-reduced-motion: reduce) {{ * {{ animation: none !important }} }}
 </style>"""
+    body = desk + bots + paper + prslot + caption
     return (
         f'<svg xmlns="http://www.w3.org/2000/svg" width="{w}" height="{h}" viewBox="0 0 {w} {h}" '
-        f'font-family="{FONT}" role="img" aria-label="Pipeline: spec, plan, build, verify, PR">'
-        f'{style}{chrome(w, h, "$ nightcrew run")}' + "".join(body) + "</svg>"
+        f'font-family="{FONT}" role="img" aria-label="Robots passing a spec through plan, build, verify to a merged PR">'
+        f'{style}{chrome(w, h, "$ nightcrew run")}' + body + "</svg>"
     )
 
 
