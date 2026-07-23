@@ -72,15 +72,15 @@ def robots_scene(y0, start):
     desk = f'<line x1="{X0}" y1="{ry + 14}" x2="{W - X0}" y2="{ry + 14}" stroke="{BORDER}" stroke-width="2"/>'
     paper_lines = "".join(
         f'<line x1="3" y1="{4 + i * 3.5}" x2="15" y2="{4 + i * 3.5}" stroke="{MUTED}" stroke-width="1.2" '
-        f'opacity="0" style="animation: ink{i} {CYC}s linear infinite"/>'
+        f'opacity="0" style="animation: ink{i} {CYC}s linear {start + 0.5:.2f}s infinite"/>'
         for i in range(4)
     )
     stamp = (f'<text x="9" y="14" font-size="9" fill="{ACCENT}" text-anchor="middle" opacity="0" '
-             f'style="animation: stampin {CYC}s linear infinite">✓</text>')
+             f'style="animation: stampin {CYC}s linear {start + 0.5:.2f}s infinite">✓</text>')
     paper = (f'<g opacity="0" style="animation: carry {CYC}s ease-in-out {start + 0.5:.2f}s infinite">'
              f'<rect x="0" y="0" width="18" height="20" rx="2" fill="{BG}" stroke="{INK}" stroke-width="1.3"/>'
              f'{paper_lines}{stamp}</g>')
-    prslot = (f'<g style="animation: prglow {CYC}s linear infinite">'
+    prslot = (f'<g style="animation: prglow {CYC}s linear {start + 0.5:.2f}s infinite">'
               f'<text x="{W - 120}" y="{y0 + 30}" font-size="13" fill="{INK}" xml:space="preserve">PR ✓</text>'
               f'<text x="{W - 128}" y="{y0 + 47}" font-size="10" fill="{MUTED}">merged</text></g>')
     # keyframes for carry are y0-dependent, so emit them here
@@ -209,9 +209,9 @@ def build():
 @keyframes bob {{ from {{ transform: translateY(0) }} to {{ transform: translateY(-3px) }} }}
 @keyframes blinkeye {{ 0%, 91%, 100% {{ opacity: 1 }} 93%, 96% {{ opacity: 0.15 }} }}
 @keyframes ink0 {{ 0%, 18% {{ opacity: 0 }} 24%, 100% {{ opacity: 1 }} }}
-@keyframes ink1 {{ 0%, 24% {{ opacity: 0 }} 30%, 100% {{ opacity: 1 }} }}
+@keyframes ink1 {{ 0%, 22% {{ opacity: 0 }} 28%, 100% {{ opacity: 1 }} }}
 @keyframes ink2 {{ 0%, 44% {{ opacity: 0 }} 50%, 100% {{ opacity: 1 }} }}
-@keyframes ink3 {{ 0%, 50% {{ opacity: 0 }} 56%, 100% {{ opacity: 1 }} }}
+@keyframes ink3 {{ 0%, 48% {{ opacity: 0 }} 54%, 100% {{ opacity: 1 }} }}
 @keyframes stampin {{ 0%, 70% {{ opacity: 0 }} 76%, 100% {{ opacity: 1 }} }}
 @keyframes prglow {{ 0%, 88% {{ opacity: 0.45 }} 94%, 100% {{ opacity: 1 }} }}
 {kf_extra}
